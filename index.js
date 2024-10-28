@@ -1,7 +1,19 @@
 import dotenv from 'dotenv';
+import express from 'express';
 import { createLeaderboardByContestId, createLeaderboardByRatings, createSemesterWiseLeaderboards, loadHandleMappingFromDB } from './leaderboards.js';
-
+const PORT = process.env.PORT || 3000;
 dotenv.config();
+
+
+const app = express();
+
+app.get('/', (req, res) => {
+    res.send('Hello World!');
+});
+
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
 
 import {
     Client, 
@@ -19,7 +31,8 @@ const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMembers
     ]
 })
 
@@ -78,6 +91,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         else Top10 = leaderboard.slice(1, 11);
         const guild = await client.guilds.fetch(interaction.guildId);
         let message = `LeaderBoard For Rating is\n`;
+        await guild.members.fetch();
         for (let i=0; i<Top10.length; i++){
             const member = guild.members.cache.find(user => user.user.username === Top10[i]['discordUsername']);
             
@@ -113,6 +127,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 Top10 = semleaderboard.slice(0, semleaderboard.length);
             }
             else Top10 = semleaderboard.slice(0, 10);
+            await guild.members.fetch();
             for (let i=0; i<Top10.length; i++){
                 const member = guild.members.cache.find(user => user.user.username === Top10[i]['discordUsername']);
                 message += `${i+1}. ${Top10[i]['name']} <${member}> Rating - ${Top10[i]['rating']}\n`;
@@ -137,6 +152,7 @@ client.on(Events.InteractionCreate, async interaction => {
     const guild = await client.guilds.fetch(interaction.guildId);
 
     let message = `LeaderBoard For ${leaderboard[0]['contestName']}\n`;
+    await guild.members.fetch();
     for (let i=0; i<Top10.length; i++){
         const member = guild.members.cache.find(user => user.user.username === Top10[i]['discordUsername']);
         
@@ -148,7 +164,7 @@ client.on(Events.InteractionCreate, async interaction => {
 });
 
 
-client.on('interactionCreate', async (interaction) => {
+client.on(Events.InteractionCreate, async (interaction) => {
     if (!interaction.isCommand()) return;
 
     if (interaction.commandName === 'leaderboard') {

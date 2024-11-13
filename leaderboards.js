@@ -62,10 +62,17 @@ async function createLeaderboardByContestId(contestId) {
                 penalty: entry.penalty
             };
         });
+        // remove repeating users based on handle
+        const newleaderb = leaderboard.filter((user, index, self) =>
+            index === self.findIndex((t) => (
+                t.handle === user.handle
+            ))
+        );
+        // console.log(newleaderb);   
 
-        leaderboard.unshift({ contestName: constestName });
+        newleaderb.unshift({ contestName: constestName });
 
-        return leaderboard;
+        return newleaderb;
     } catch (error) {
         console.error('Error fetching contest standings:', error);
         throw new Error('Failed to generate leaderboard.');

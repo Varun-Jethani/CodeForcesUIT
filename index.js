@@ -61,6 +61,16 @@ app.get('/', (req, res) => {
     res.send(htmlContent);
 });
 
+app.get('/leaderboard', async (req, res) => {
+    try {
+        const leaderboard = await createLeaderboardByRatings();
+        res.json(leaderboard);
+    } catch (error) {
+        console.error('Error fetching leaderboard:', error);
+        res.status(500).send('Failed to fetch leaderboard.');
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
